@@ -19,15 +19,15 @@ def test_init_db():
     """Database initialises without errors."""
     init_db()
 
-
 def test_create_case():
     """A case can be created and retrieved."""
+    import time
     init_db()
-    case = create_case("TEST-001", "Phase 1 Test Case", "theconsoler")
-    assert case["case_id"] == "TEST-001"
+    unique_id = f"TEST-{int(time.time())}"
+    case = create_case(unique_id, "Phase 1 Test Case", "theconsoler")
+    assert case["case_id"] == unique_id
     assert case["name"] == "Phase 1 Test Case"
     assert case["analyst"] == "theconsoler"
-
 
 def test_duplicate_case_raises():
     """Creating a case with an existing ID raises ValueError."""

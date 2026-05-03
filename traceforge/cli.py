@@ -134,43 +134,86 @@ def ingest(case_id, file_path, analyst, module, notes):
 # ── ANALYSIS MODULE STUBS ─────────────────────────────────────────────────────
 
 @cli.command()
-@click.option("--case",  "case_id",   required=True, help="Case ID")
-@click.option("--image", required=True,               help="Path to memory image file")
-def memory(case_id, image):
-    """Run memory forensics on a memory dump. (Phase 2)"""
-    console.print(f"[yellow]Memory module — coming in Phase 2[/yellow]")
-    console.print(f"  Case  : {case_id}")
-    console.print(f"  Image : {image}")
+@click.option("--case",    "case_id",  required=True, help="Case ID")
+@click.option("--image",   required=True,              help="Path to memory image")
+@click.option("--analyst", required=True,              help="Analyst name or ID")
+@click.option("--host",    "host_id",  default=None,   help="Host identifier")
+@click.option("--plugins", default="pslist,netstat,cmdline",
+              help="Comma-separated list of plugins to run")
+def memory(case_id, image, analyst, host_id, plugins):
+    """Run memory forensics on a memory dump."""
+    from traceforge.modules.memory import analyze
+    plugin_list = [p.strip() for p in plugins.split(",")]
+    console.print(f"\n[bold cyan]Memory Forensics Analysis[/bold cyan]")
+    console.print(f"  Case    : {case_id}")
+    console.print(f"  Image   : {image}")
+    console.print(f"  Plugins : {plugin_list}\n")
+    try:
+        artifacts = analyze(case_id, image, analyst, host_id, plugin_list)
+        console.print(f"[bold green]{len(artifacts)} artifacts found[/bold green]\n")
+        for a in artifacts[:30]:
+            console.print(f"  [cyan]{a.artifact_type:<25}[/cyan] {a.summary()}")
+        if len(artifacts) > 30:
+            console.print(f"  [dim]... and {len(artifacts) - 30} more[/dim]")
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
 
 
 @cli.command()
-@click.option("--case",  "case_id",   required=True, help="Case ID")
-@click.option("--image", required=True,               help="Path to disk image file")
-def disk(case_id, image):
-    """Run disk image analysis. (Phase 2)"""
-    console.print(f"[yellow]Disk module — coming in Phase 2[/yellow]")
-    console.print(f"  Case  : {case_id}")
-    console.print(f"  Image : {image}")
-
+@click.option("--case",    "case_id",  required=True, help="Case ID")
+@click.option("--image",   required=True,              help="Path to disk image or directory")
+@click.option("--analyst", required=True,              help="Analyst name or ID")
+@click.option("--host",    "host_id",  default=None,   help="Host identifier")
+def disk(case_id, image, analyst, host_id):
+    """Run disk image analysis."""
+    from traceforge.modules.disk import analyze
+    console.print(f"\n[bold cyan]Disk Image Analysis[/bold cyan]")
+    console.print(f"  Case  : {case_id} | Image : {image}\n")
+    try:
+        artifacts = analyze(case_id, image, analyst, host_id)
+        console.print(f"[bold green]{len(artifacts)} artifacts found[/bold green]\n")
+        for a in artifacts[:20]:
+            console.print(f"  [cyan]{a.artifact_type:<25}[/cyan] {a.summary()}")
+        if len(artifacts) > 20:
+            console.print(f"  [dim]... and {len(artifacts) - 20} more[/dim]")
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
 
 @cli.command()
-@click.option("--case",  "case_id",   required=True, help="Case ID")
-@click.option("--file",  "log_file",  required=True, help="Path to log file")
-def logs(case_id, log_file):
-    """Run log correlation analysis. (Phase 2)"""
-    console.print(f"[yellow]Logs module — coming in Phase 2[/yellow]")
-    console.print(f"  Case : {case_id}")
-    console.print(f"  File : {log_file}")
-
+@click.option("--case",    "case_id",   required=True, help="Case ID")
+@click.option("--file",    "log_file",  required=True, help="Path to log file")
+@click.option("--analyst", required=True,               help="Analyst name or ID")
+@click.option("--host",    "host_id",   default=None,   help="Hostname or IP of log source")
+def logs(case_id, log_file, analyst, host_id):
+    """Run log correlation analysis."""
+    from traceforge.modules.logs import analyze
+    console.print(f"\n[bold cyan]Log Correlation Analysis[/bold cyan]")
+    console.print(f"  Case : {case_id} | File : {log_file}\n")
+    try:
+        artifacts = analyze(case_id, log_file, analyst, host_id)
+        console.print(f"[bold green]{len(artifacts)} artifacts found[/bold green]\n")
+        for a in artifacts:
+            console.print(f"  [cyan]{a.artifact_type:<25}[/cyan] {a.summary()}")
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
 
 @cli.command()
-@click.option("--case",  "case_id",   required=True, help="Case ID")
-@click.option("--pcap",  required=True,               help="Path to PCAP file")
-def network(case_id, pcap):
-    """Run network packet analysis. (Phase 2)"""
-    console.print(f"[yellow]Network module — coming in Phase 2[/yellow]")
-    console.print(f"  Case : {case_id}")
-    console.print(f"  PCAP : {pcap}")
+@click.option("--case",    "case_id",  required=True, help="Case ID")
+@click.option("--pcap",    required=True,              help="Path to PCAP file")
+@click.option("--analyst", required=True,              help="Analyst name or ID")
+@click.option("--host",    "host_id",  default=None,   help="Host identifier")
+def network(case_id, pcap, analyst, host_id):
+    """Run network packet analysis."""
+    from traceforge.modules.network import analyze
+    console.print(f"\n[bold cyan]Network Packet Analysis[/bold cyan]")
+    console.print(f"  Case : {case_id} | PCAP : {pcap}\n")
+    try:
+        artifacts = analyze(case_id, pcap, analyst, host_id)
+        console.print(f"[bold green]{len(artifacts)} artifacts found[/bold green]\n")
+        for a in artifacts:
+            console.print(f"  [cyan]{a.artifact_type:<25}[/cyan] {a.summary()}")
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
 
 
 @cli.command()
