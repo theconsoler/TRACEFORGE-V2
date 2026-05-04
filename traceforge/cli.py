@@ -217,23 +217,49 @@ def network(case_id, pcap, analyst, host_id):
 
 
 @cli.command()
-@click.option("--case",   "case_id",  required=True, help="Case ID")
-@click.option("--format", "fmt",      default="json",
-              type=click.Choice(["json", "html", "pdf"]),
-              help="Output format")
-def report(case_id, fmt):
-    """Generate case report. (Phase 3)"""
-    console.print(f"[yellow]Report module — coming in Phase 3[/yellow]")
-    console.print(f"  Case   : {case_id}")
-    console.print(f"  Format : {fmt}")
+@click.option("--case",    "case_id", required=True, help="Case ID")
+@click.option("--format",  "fmt",     default="all",
+              type=click.Choice(["json", "html", "pdf", "all"]),
+              help="Output format (default: all)")
+@click.option("--output",  "out_dir", default=None, help="Output directory")
+def report(case_id, fmt, out_dir):
+    """Generate case report in JSON, HTML, and/or PDF."""
+    from traceforge.core.report import generate_report
+    from traceforge.core.store import save_artifacts
+    formats = ["json", "html", "pdf"] if fmt == "all" else [fmt]
+    console.print(f"\n[bold cyan]Generating Case Report[/bold cyan]")
+    console.print(f"  Case    : {case_id}")
+    console.print(f"  Formats : {formats}\n")
+    try:
+        paths = generate_report(case_id, formats, out_dir)
+        console.print(f"[bold green]Report generated successfully[/bold green]\n")
+        for fmt_name, path in paths.items():
+            console.print(f"  {fmt_name.upper():<6} : {path}")
+        console.print()
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
 
 
 @cli.command()
-@click.option("--case", "case_id", required=True, help="Case ID to correlate")
-def correlate(case_id):
-    """Run cross-module correlation engine. (Phase 3)"""
-    console.print(f"[yellow]Correlation engine — coming in Phase 3[/yellow]")
-    console.print(f"  Case : {case_id}")
+@click.option("--case",   "case_id", required=True, help="Case ID to correlate")
+@click.option("--window", default=30, help="Timestamp proximity window in seconds")
+def correlate(case_id, window):
+    """Run cross-module correlation engine."""
+    from traceforge.core.correlator import correlate as run_correlate, correlate_summary
+    console.print(f"\n[bold cyan]Cross-Module Correlation Engine[/bold cyan]")
+    console.print(f"  Case: {case_id} | Window: {window}s\n")
+    results = run_correlate(case_id, window)
+    summary = correlate_summary(results)
+    console.print(f"[bold green]Correlation complete[/bold green]")
+    console.print(f"  Total links      : {summary['total']}")
+    console.print(f"  High confidence  : {summary['high_confidence']}")
+    console.print(f"  Medium confidence: {summary['medium_confidence']}")
+    console.print(f"  Low confidence   : {summary['low_confidence']}\n")
+    for r in results[:10]:
+        conf_color = "red" if r.confidence >= 0.8 else "yellow" if r.confidence >= 0.5 else "dim"
+        console.print(f"  [{conf_color}]{r.confidence:.0%}[/{conf_color}] {r.description}")
+    if len(results) > 10:
+        console.print(f"  [dim]... and {len(results) - 10} more[/dim]")
 
 
 @cli.command()
@@ -242,5 +268,41 @@ def banner():
     console.print(BANNER)
 
 
+# ── ADD THE ANALYZE COMMAND HERE ──────────────────────────────────────────────
+
+@cli.command()
+@click.option("--case",    "case_id",   required=True, help="Case ID")
+@click.option("--module",  required=True,
+              type=click.Choice(["memory", "disk", "logs", "network"]),
+              help="Module to run and store artifacts for")
+@click.option("--file",    "file_path", required=True, help="Path to evidence file")
+@click.option("--analyst", required=True,               help="Analyst name or ID")
+@click.option("--host",    "host_id",   default=None,   help="Host identifier")
+def analyze(case_id, module, file_path, analyst, host_id):
+    """Run a module and store artifacts for correlation."""
+    from traceforge.core.store import save_artifacts
+    module_map = {
+        "logs":    ("traceforge.modules.logs",    "analyze"),
+        "network": ("traceforge.modules.network", "analyze"),
+        "disk":    ("traceforge.modules.disk",    "analyze"),
+        "memory":  ("traceforge.modules.memory",  "analyze"),
+    }
+    import importlib
+    mod_path, func_name = module_map[module]
+    mod = importlib.import_module(mod_path)
+    analyze_fn = getattr(mod, func_name)
+    console.print(f"\n[bold cyan]Running {module.upper()} analysis and storing artifacts[/bold cyan]\n")
+    try:
+        artifacts = analyze_fn(case_id, file_path, analyst, host_id)
+        saved = save_artifacts(artifacts)
+        console.print(f"[bold green]{len(artifacts)} artifacts found, {saved} stored[/bold green]")
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
+
+# ── ENTRY POINT ───────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
     cli()
+
+from traceforge.core.store import save_artifacts
