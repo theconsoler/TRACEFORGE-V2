@@ -1,0 +1,25 @@
+services:
+  traceforge:
+    build: .
+    container_name: traceforge-cli
+    volumes:
+      - ./data:/traceforge/data
+      - ./reports:/traceforge/reports
+      - ./samples:/traceforge/samples
+    environment:
+      - PYTHONUNBUFFERED=1
+    stdin_open: true
+    tty: true
+
+  traceforge-dashboard:
+    build: .
+    container_name: traceforge-dashboard
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/traceforge/data
+      - ./reports:/traceforge/reports
+    environment:
+      - PYTHONUNBUFFERED=1
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["python3.11 -m dashboard.app"]

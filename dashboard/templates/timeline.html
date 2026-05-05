@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Timeline — {{ case.id }}{% endblock %}
+{% block content %}
+<div class="container">
+  <a href="/case/{{ case.id }}" class="back">← Case Overview</a>
+  <h1 class="page-title">IOC Timeline — <span>{{ case.id }}</span></h1>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">{{ total }} events sorted chronologically across all modules</p>
+
+  <!-- Filters -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    <button class="btn btn-ghost filter-btn active" data-filter="all">All</button>
+    <button class="btn btn-ghost filter-btn" data-filter="memory" style="color:#a78bfa;">Memory</button>
+    <button class="btn btn-ghost filter-btn" data-filter="disk" style="color:#7dd3fc;">Disk</button>
+    <button class="btn btn-ghost filter-btn" data-filter="logs" style="color:#4ade80;">Logs</button>
+    <button class="btn btn-ghost filter-btn" data-filter="network" style="color:#f87171;">Network</button>
+    <button class="btn btn-ghost filter-btn" data-filter="critical" style="color:#f87171;">Critical</button>
+    <button class="btn btn-ghost filter-btn" data-filter="high" style="color:#fb923c;">High</button>
+  </div>
+
+  <!-- Timeline -->
+  <div class="card" style="padding:0;">
+    <table id="timeline-table">
+      <thead>
+        <tr>
+          <th style="width:150px;">Timestamp</th>
+          <th style="width:100px;">Module</th>
+          <th style="width:80px;">Severity</th>
+          <th style="width:120px;">Type</th>
+          <th>Summary</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+        <tr class="tl-row" data-module="{{ e.module }}" data-severity="{{ e.severity }}">
+          <td style="font-family:monospace;font-size:11px;color:var(--muted);">{{ e.timestamp[:19] }}</td>
+          <td><span class="badge badge-{{ e.module }}">{{ e.module.upper() }}</span></td>
+          <td><span class="badge badge-{{ e.severity }}">{{ e.severity.upper() }}</span></td>
+          <td style="font-size:12px;color:var(--muted);">{{ e.artifact_type }}</td>
+          <td style="font-size:13px;">
+            {{ e.summary }}
+            {% if e.correlation_links %}
+            <div style="font-size:11px;color:var(--cyan);margin-top:3px;">⚡ {{ e.correlation_links[0] }}</div>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    document.querySelectorAll('.tl-row').forEach(row => {
+      if (f === 'all') {
+        row.style.display = '';
+      } else if (f === 'critical' || f === 'high' || f === 'medium' || f === 'low') {
+        row.style.display = row.dataset.severity === f ? '' : 'none';
+      } else {
+        row.style.display = row.dataset.module === f ? '' : 'none';
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

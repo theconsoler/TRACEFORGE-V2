@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ case.id }} — TraceForge v2{% endblock %}
+{% block content %}
+<div class="container">
+  <a href="/" class="back">← All Cases</a>
+
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;">
+    <div>
+      <h1 class="page-title" style="margin-bottom:4px;">Case: <span>{{ case.id }}</span></h1>
+      <p style="color:var(--muted);font-size:13px;">{{ case.name }} &nbsp;·&nbsp; Analyst: {{ case.analyst }} &nbsp;·&nbsp; {{ case.created_at[:19] }}</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <a href="/case/{{ case.id }}/timeline" class="btn btn-ghost">Timeline</a>
+      <a href="/case/{{ case.id }}/correlations" class="btn btn-ghost">Correlations</a>
+      <a href="/case/{{ case.id }}/report/html" class="btn btn-primary">Export HTML</a>
+      <a href="/case/{{ case.id }}/report/pdf" class="btn btn-primary">Export PDF</a>
+      <a href="/case/{{ case.id }}/report/json" class="btn btn-ghost">Export JSON</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number">{{ total_artifacts }}</div>
+      <div class="stat-label">Total Artifacts</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">{{ corr_summary.total }}</div>
+      <div class="stat-label">Correlations</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" style="color:var(--red);">{{ severity_counts.get('critical', 0) }}</div>
+      <div class="stat-label">Critical</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" style="color:var(--orange);">{{ severity_counts.get('high', 0) }}</div>
+      <div class="stat-label">High</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" style="color:var(--yellow);">{{ severity_counts.get('medium', 0) }}</div>
+      <div class="stat-label">Medium</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">{{ timeline_count }}</div>
+      <div class="stat-label">Timeline Events</div>
+    </div>
+  </div>
+
+  <!-- Artifacts by module -->
+  <div class="card">
+    <div class="card-title">Artifacts by Module</div>
+    <table>
+      <thead><tr><th>Module</th><th>Artifact Count</th><th></th></tr></thead>
+      <tbody>
+        {% for mod, count in counts.items() %}
+        <tr>
+          <td><span class="badge badge-{{ mod }}">{{ mod.upper() }}</span></td>
+          <td>{{ count }}</td>
+          <td style="color:var(--muted);font-size:12px;">
+            {% if mod == 'memory' %}processes, connections, commands
+            {% elif mod == 'disk' %}files, deleted files, metadata
+            {% elif mod == 'logs' %}logins, sudo, brute force
+            {% elif mod == 'network' %}DNS, HTTP, TCP flows
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Evidence ledger -->
+  <div class="card">
+    <div class="card-title">Evidence Ledger — Chain of Custody</div>
+    {% if evidence %}
+    <table>
+      <thead><tr><th>File</th><th>Module</th><th>SHA-256</th><th>Size</th><th>Recorded</th></tr></thead>
+      <tbody>
+        {% for e in evidence %}
+        <tr>
+          <td style="font-family:monospace;font-size:12px;">{{ e.file_path.split('/')[-1] }}</td>
+          <td><span class="badge badge-{{ e.module }}">{{ e.module.upper() }}</span></td>
+          <td class="hash">{{ e.sha256_hash[:32] }}...</td>
+          <td style="color:var(--muted);font-size:12px;">{{ '{:,}'.format(e.file_size_bytes) }} B</td>
+          <td style="color:var(--muted);font-size:12px;">{{ e.recorded_at[:19] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--muted);font-size:13px;">No evidence logged yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Correlation summary -->
+  {% if corr_summary.total > 0 %}
+  <div class="card">
+    <div class="card-title">Correlation Summary</div>
+    <div style="display:flex;gap:24px;">
+      <div><span style="color:var(--red);font-size:20px;font-weight:700;">{{ corr_summary.high_confidence }}</span><br><span style="font-size:12px;color:var(--muted);">High confidence</span></div>
+      <div><span style="color:var(--yellow);font-size:20px;font-weight:700;">{{ corr_summary.medium_confidence }}</span><br><span style="font-size:12px;color:var(--muted);">Medium confidence</span></div>
+      <div><span style="color:var(--muted);font-size:20px;font-weight:700;">{{ corr_summary.low_confidence }}</span><br><span style="font-size:12px;color:var(--muted);">Low confidence</span></div>
+    </div>
+    <div style="margin-top:12px;">
+      <a href="/case/{{ case.id }}/correlations" class="btn btn-ghost">View all correlations →</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

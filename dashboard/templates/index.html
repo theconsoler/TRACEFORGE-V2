@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}TraceForge v2 — Cases{% endblock %}
+{% block content %}
+<div class="container">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <h1 class="page-title" style="margin:0;">Investigation <span>Cases</span></h1>
+  </div>
+
+  {% if cases %}
+  <div class="card" style="padding:0;">
+    <table>
+      <thead>
+        <tr>
+          <th>Case ID</th>
+          <th>Name</th>
+          <th>Analyst</th>
+          <th>Artifacts</th>
+          <th>Modules</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in cases %}
+        <tr>
+          <td><span style="color:var(--cyan);font-family:monospace;font-size:12px;">{{ c.id }}</span></td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.analyst }}</td>
+          <td><strong>{{ c.artifact_count }}</strong></td>
+          <td>
+            {% for mod, count in c.module_counts.items() %}
+            <span class="badge badge-{{ mod }}">{{ mod }} {{ count }}</span>
+            {% endfor %}
+          </td>
+          <td style="color:var(--muted);font-size:12px;">{{ c.created_at[:10] }}</td>
+          <td>
+            <a href="/case/{{ c.id }}" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <h3>No cases yet</h3>
+    <p>Create a case using the CLI: <code>python -m traceforge.cli case new</code></p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

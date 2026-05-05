@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}TraceForge v2{% endblock %}</title>
+<style>
+  :root {
+    --bg:       #0d1117;
+    --surface:  #161b22;
+    --border:   #21262d;
+    --text:     #e6edf3;
+    --muted:    #8b949e;
+    --cyan:     #22d3ee;
+    --purple:   #a78bfa;
+    --green:    #4ade80;
+    --red:      #f87171;
+    --yellow:   #fbbf24;
+    --orange:   #fb923c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',Arial,sans-serif; min-height:100vh; }
+
+  /* NAV */
+  nav { background:var(--surface); border-bottom:1px solid var(--border); padding:0 24px; display:flex; align-items:center; gap:24px; height:56px; }
+  nav .brand { color:var(--cyan); font-weight:700; font-size:16px; text-decoration:none; letter-spacing:1px; }
+  nav a { color:var(--muted); text-decoration:none; font-size:13px; }
+  nav a:hover { color:var(--text); }
+
+  /* LAYOUT */
+  .container { max-width:1200px; margin:0 auto; padding:32px 24px; }
+  .page-title { font-size:22px; font-weight:600; margin-bottom:24px; }
+  .page-title span { color:var(--cyan); }
+
+  /* CARDS */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:16px; }
+  .card-title { font-size:13px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:16px; }
+
+  /* STATS GRID */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:16px; margin-bottom:24px; }
+  .stat { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; text-align:center; }
+  .stat-number { font-size:32px; font-weight:700; color:var(--cyan); line-height:1; }
+  .stat-label { font-size:12px; color:var(--muted); margin-top:6px; }
+
+  /* TABLE */
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { color:var(--muted); text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); font-weight:500; font-size:12px; text-transform:uppercase; }
+  td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(255,255,255,0.02); }
+
+  /* BADGES */
+  .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:500; }
+  .badge-memory  { background:#2d1b69; color:#a78bfa; }
+  .badge-disk    { background:#0c3251; color:#7dd3fc; }
+  .badge-logs    { background:#052e16; color:#4ade80; }
+  .badge-network { background:#450a0a; color:#f87171; }
+  .badge-critical { background:#450a0a; color:#f87171; }
+  .badge-high    { background:#431407; color:#fb923c; }
+  .badge-medium  { background:#422006; color:#fbbf24; }
+  .badge-low     { background:#0c1a3b; color:#7dd3fc; }
+  .badge-info    { background:#1c2333; color:#8b949e; }
+
+  /* BUTTONS */
+  .btn { display:inline-block; padding:8px 16px; border-radius:6px; font-size:13px; font-weight:500; text-decoration:none; cursor:pointer; border:none; }
+  .btn-primary { background:var(--cyan); color:#0d1117; }
+  .btn-primary:hover { opacity:0.9; }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text); }
+  .btn-ghost:hover { border-color:var(--cyan); color:var(--cyan); }
+
+  /* BACK LINK */
+  .back { display:inline-flex; align-items:center; gap:6px; color:var(--muted); text-decoration:none; font-size:13px; margin-bottom:20px; }
+  .back:hover { color:var(--cyan); }
+
+  /* HASH */
+  .hash { font-family:monospace; font-size:11px; color:var(--muted); word-break:break-all; }
+
+  /* EMPTY STATE */
+  .empty { text-align:center; padding:60px 20px; color:var(--muted); }
+  .empty h3 { font-size:16px; margin-bottom:8px; color:var(--text); }
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="brand">⚡ TRACEFORGE v2</a>
+  <a href="/">Cases</a>
+  <span style="flex:1"></span>
+  <span style="font-size:12px;color:var(--muted);">Digital Forensics & Incident Response</span>
+</nav>
+{% block content %}{% endblock %}
+</body>
+</html>

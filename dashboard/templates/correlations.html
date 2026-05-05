@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Correlations — {{ case.id }}{% endblock %}
+{% block content %}
+<div class="container">
+  <a href="/case/{{ case.id }}" class="back">← Case Overview</a>
+  <h1 class="page-title">Correlation Findings — <span>{{ case.id }}</span></h1>
+
+  <div class="stats" style="margin-bottom:24px;">
+    <div class="stat">
+      <div class="stat-number">{{ summary.total }}</div>
+      <div class="stat-label">Total Links</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" style="color:var(--red);">{{ summary.high_confidence }}</div>
+      <div class="stat-label">High Confidence</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" style="color:var(--yellow);">{{ summary.medium_confidence }}</div>
+      <div class="stat-label">Medium Confidence</div>
+    </div>
+  </div>
+
+  {% if correlations %}
+  <div class="card" style="padding:0;">
+    <table>
+      <thead>
+        <tr>
+          <th>Confidence</th>
+          <th>Link Type</th>
+          <th>Module A</th>
+          <th>Module B</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in correlations %}
+        <tr>
+          <td>
+            <span class="badge badge-{% if r.confidence_pct >= 80 %}critical{% elif r.confidence_pct >= 50 %}medium{% else %}low{% endif %}">
+              {{ r.confidence_pct }}%
+            </span>
+          </td>
+          <td style="font-size:12px;color:var(--muted);">{{ r.link_type }}</td>
+          <td><span class="badge badge-{{ r.module_a }}">{{ r.module_a.upper() }}</span> <span style="font-size:11px;color:var(--muted);">{{ r.type_a }}</span></td>
+          <td><span class="badge badge-{{ r.module_b }}">{{ r.module_b.upper() }}</span> <span style="font-size:11px;color:var(--muted);">{{ r.type_b }}</span></td>
+          <td style="font-size:13px;">{{ r.description }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <h3>No correlations found</h3>
+    <p>Run analysis on multiple modules and then run the correlate command.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
