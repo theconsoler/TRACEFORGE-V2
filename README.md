@@ -26,7 +26,7 @@
 
 ## What is TraceForge v2?
 
-TraceForge v2 is an open-source Digital Forensics and Incident Response toolkit that unifies memory forensics, disk analysis, log correlation, and network packet analysis under one roof — with a proper chain-of-custody evidence ledger, a cross-module correlation engine, and a web dashboard for case management.
+TraceForge v2 is an open-source Digital Forensics and Incident Response toolkit that unifies memory forensics, disk analysis, log correlation, and network packet analysis under one roof with a proper chain-of-custody evidence ledger, a cross-module correlation engine, and a web dashboard for case management.
 
 Built from scratch as a research project during B.Tech Cybersecurity studies at Sri Sri University. The v1 skeleton was built in 7th semester and never shipped. v2 is the real thing.
 
