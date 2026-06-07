@@ -26,7 +26,11 @@
 
 ## The Story Behind TraceForge
 
+<<<<<<< HEAD
 During real-world incident response, analysts are forced to use 4 to 5 separate tools just to gather and analyze evidence from a single investigation. One tool for memory forensics. Another for disk images. A third for log correlation. A fourth for PCAP analysis. None of them talk to each other. None of them share a common evidence format. And none of them enforce proper chain-of-custody tracking.
+=======
+TraceForge v2 is an open-source Digital Forensics and Incident Response toolkit that unifies memory forensics, disk analysis, log correlation, and network packet analysis under one roof with a proper chain-of-custody evidence ledger, a cross-module correlation engine, and a web dashboard for case management.
+>>>>>>> 281627f65bca1e40379bb6c6d101b7e854584afb
 
 TraceForge v2 was built to fix that.
 
