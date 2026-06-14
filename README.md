@@ -17,6 +17,7 @@
 ![Status](https://img.shields.io/badge/Status-Active%20Development-brightgreen?style=flat-square)
 ![Tests](https://img.shields.io/badge/Tests-36%20Passing-success?style=flat-square)
 ![Docker](https://img.shields.io/badge/Docker-Supported-blue?style=flat-square&logo=docker)
+![Security Audit](https://img.shields.io/badge/Security%20Audit-June%202026-yellow?style=flat-square&logo=shield)
 
 *A modular DFIR toolkit built for students learning incident response and professionals conducting real investigations.*
 
@@ -367,6 +368,45 @@ Forensic integrity is not optional. TraceForge enforces it at the code level:
 3. The `evidence_log` table has no UPDATE or DELETE operations in the codebase — it is append-only by design
 4. At any point after ingestion, `verify_hash()` can re-hash the file and compare against the stored value to detect tampering
 5. Every report includes the full evidence ledger with SHA-256 hashes for formal documentation
+
+---
+
+## 🔐 Security
+
+TraceForge V2 underwent a full manual security audit in June 2026 — automated static analysis, dependency scanning, and manual code review across all critical code paths.
+
+**Tools used:** Semgrep OSS, Bandit, pip-audit, Safety, detect-secrets
+
+### Audit Results
+
+| Area | Result |
+|---|---|
+| SQL Injection | ✅ Clean — all queries use parameterized placeholders |
+| Command Injection | ✅ Clean — all subprocess calls use list form, no shell=True |
+| Path Traversal | ✅ Clean — file format validated against whitelist before serving |
+| Pickle Deserialization | ✅ Clean — zero pickle usage in project code |
+| Hardcoded Secrets | ✅ Clean — zero secrets found across entire codebase |
+| Git History | ✅ Clean — no accidentally committed credentials |
+| CSRF Protection | ✅ Applied — Flask-WTF CSRFProtect active |
+
+### Findings (Fixes in Progress)
+
+| ID | Severity | File | Issue |
+|---|---|---|---|
+| #1 + #2 | 🔴 HIGH | `dashboard/app.py:158` | Flask `debug=True` + `host=0.0.0.0` — RCE risk. Fix: move to `.env` config |
+| #3 | 🟡 MEDIUM | `Dockerfile:46` | Container runs as root — no `USER` directive |
+| #4 | 🟡 MEDIUM | `core/report.py:267` | Direct Jinja2 render — autoescape not explicitly confirmed |
+
+### Dependency Audit
+
+**30 CVEs found across 10 packages (pip-audit) / 64 CVEs across 20 packages (Safety).**
+
+Most critical: `gitpython 3.1.24` (8 CVEs including RCE), `pillow 9.0.1` (8 CVEs including RCE).
+All are fixable with `pip install --upgrade`. Upgrades pending — tracked in the audit log.
+
+> Full audit report: [`docs/SECURITY_AUDIT_VERDICT.md`](docs/SECURITY_AUDIT_VERDICT.md)
+>
+> **Responsible disclosure:** If you find a vulnerability, open a private GitHub security advisory.
 
 ---
 
