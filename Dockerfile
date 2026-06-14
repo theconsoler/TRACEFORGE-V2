@@ -1,9 +1,7 @@
 FROM ubuntu:22.04
-
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-
 # System dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -28,6 +26,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user
+RUN groupadd -r traceforge && useradd -r -g traceforge -d /traceforge traceforge
+
 # Create working directory
 WORKDIR /traceforge
 
@@ -39,10 +40,13 @@ RUN python3.11 -m pip install --upgrade pip && \
 # Copy project
 COPY . .
 
-# Create data and reports directories
-RUN mkdir -p /traceforge/data /traceforge/reports /traceforge/samples
+# Create data and reports directories, hand ownership to traceforge user
+RUN mkdir -p /traceforge/data /traceforge/reports /traceforge/samples && \
+    chown -R traceforge:traceforge /traceforge
+
+USER traceforge
 
 # Default command — show help
 ENTRYPOINT ["python3.11", "-m", "traceforge.cli"]
 CMD ["--help"]
-RUN ln -s /usr/bin/python3.11 /usr/local/bin/python3 && ln -s /usr/bin/python3.11 /usr/local/bin/python
+

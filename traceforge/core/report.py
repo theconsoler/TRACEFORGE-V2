@@ -9,7 +9,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 from loguru import logger
-from jinja2 import Template
+from jinja2 import Environment
 
 from traceforge.core.ledger import get_case, get_evidence_log
 from traceforge.core.store import get_artifacts, get_artifact_count
@@ -263,7 +263,8 @@ def generate_report(
     # HTML report
     html_content = None
     if "html" in formats or "pdf" in formats:
-        template = Template(HTML_TEMPLATE)
+        env = Environment(autoescape=True)
+        template = env.from_string(HTML_TEMPLATE)
         html_content = template.render(
             case=case,
             generated_at=generated_at,

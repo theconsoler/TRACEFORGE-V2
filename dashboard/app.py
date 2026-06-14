@@ -10,6 +10,9 @@ import json
 import os
 import sys
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -152,7 +155,11 @@ def api_artifacts(case_id):
 
 
 if __name__ == "__main__":
+    flask_debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    flask_host = os.getenv("FLASK_HOST", "127.0.0.1")
+    flask_port = int(os.getenv("FLASK_PORT", 5000))
+
     print("\n  TraceForge v2 Dashboard")
-    print("  Running at: http://0.0.0.0:5000")
+    print(f"  Running at: http://{flask_host}:{flask_port}")
     print("  Press Ctrl+C to stop\n")
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=flask_debug, host=flask_host, port=flask_port)
